@@ -6,7 +6,7 @@ class UpdateScreen extends StatefulWidget {
   final String title;
   final String description;
   final String id;
-  UpdateScreen({
+  const UpdateScreen({
     super.key,
     required this.title,
     required this.description,
