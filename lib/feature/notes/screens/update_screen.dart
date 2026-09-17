@@ -86,7 +86,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
                 text: "Add Note",
                 onPressed: () async {
                   NotesServices notesServices = NotesServices();
-                  notesServices.UpdateNote(
+                  notesServices.updateNote(
                     titleController.text,
                     desController.text,
                     widget.id,

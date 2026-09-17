@@ -14,7 +14,7 @@ class NotesServices {
     _firestore.collection("notes").doc(id).delete();
   }
 
-  Future<void> UpdateNote(String title, String description, String id) async {
+  Future<void> updateNote(String title, String description, String id) async {
     await _firestore.collection("notes").doc(id).update({
       "title": title,
       "description": description,
