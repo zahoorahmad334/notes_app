@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:notes_app/feature/auth_services/auth_services.dart';
 import 'package:notes_app/customs/button_widget.dart';
 import 'package:notes_app/feature/auth_services/login_screen.dart';
+import 'package:notes_app/provider/auth_provider.dart';
+import 'package:provider/provider.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -19,9 +21,6 @@ class _SignupPageState extends State<SignupScreen> {
   final TextEditingController confirmPasswordController =
       TextEditingController();
 
-  bool isPasswordHidden = true;
-  bool isConfirmPasswordHidden = true;
-
   @override
   void dispose() {
     nameController.dispose();
@@ -33,6 +32,7 @@ class _SignupPageState extends State<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print("build the whole UI");
     return Scaffold(
       appBar: AppBar(title: const Text("Sign Up"), centerTitle: true),
       body: SingleChildScrollView(
@@ -79,57 +79,61 @@ class _SignupPageState extends State<SignupScreen> {
               const SizedBox(height: 20),
 
               // Password
-              TextFormField(
-                controller: passwordController,
-                obscureText: isPasswordHidden,
-                decoration: InputDecoration(
-                  labelText: "Password",
-                  hintText: "Enter your password",
-                  prefixIcon: const Icon(Icons.lock),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      isPasswordHidden
-                          ? Icons.visibility
-                          : Icons.visibility_off,
+              Consumer<AuthProvider>(
+                builder: (context, authProvider, child) {
+                  return TextFormField(
+                    controller: passwordController,
+                    obscureText: !authProvider.passwordObsecure,
+                    decoration: InputDecoration(
+                      labelText: "Password",
+                      hintText: "Enter your password",
+                      prefixIcon: const Icon(Icons.lock),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          authProvider.passwordObsecure
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                        ),
+                        onPressed: () {
+                          authProvider.togglePasswordObsecure();
+                        },
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                    onPressed: () {
-                      setState(() {
-                        isPasswordHidden = !isPasswordHidden;
-                      });
-                    },
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
+                  );
+                },
               ),
 
               const SizedBox(height: 20),
 
               // Confirm Password
-              TextFormField(
-                controller: confirmPasswordController,
-                obscureText: isConfirmPasswordHidden,
-                decoration: InputDecoration(
-                  labelText: "Confirm Password",
-                  hintText: "Confirm your password",
-                  prefixIcon: const Icon(Icons.lock_outline),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      isConfirmPasswordHidden
-                          ? Icons.visibility
-                          : Icons.visibility_off,
+              Consumer<AuthProvider>(
+                builder: (context, authProvider, child) {
+                  return TextFormField(
+                    controller: confirmPasswordController,
+                    obscureText: !authProvider.confirmPasswordObsecure,
+                    decoration: InputDecoration(
+                      labelText: "Confirm Password",
+                      hintText: "Confirm your password",
+                      prefixIcon: const Icon(Icons.lock_outline),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          authProvider.passwordObsecure
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                        ),
+                        onPressed: () {
+                          authProvider.toggleConfirmPasswordObsecrue();
+                        },
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                    onPressed: () {
-                      setState(() {
-                        isConfirmPasswordHidden = !isConfirmPasswordHidden;
-                      });
-                    },
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
+                  );
+                },
               ),
 
               const SizedBox(height: 30),
@@ -146,7 +150,7 @@ class _SignupPageState extends State<SignupScreen> {
                   }
 
                   try {
-                    Services services = Services();
+                    AuthServices services = AuthServices();
 
                     await services.signUp(
                       name: nameController.text,

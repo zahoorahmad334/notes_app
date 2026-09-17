@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:notes_app/feature/auth_services/auth_services.dart';
 import 'package:notes_app/customs/button_widget.dart';
 import 'package:notes_app/feature/notes/screens/home_screen.dart';
 import 'package:notes_app/feature/auth_services/signup_screen.dart';
+import 'package:notes_app/provider/auth_provider.dart';
+import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -16,8 +17,6 @@ class _LoginPageState extends State<LoginScreen> {
 
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-
-  bool isPasswordHidden = true;
 
   @override
   void dispose() {
@@ -82,74 +81,81 @@ class _LoginPageState extends State<LoginScreen> {
                 const SizedBox(height: 20),
 
                 // Password
-                TextFormField(
-                  controller: passwordController,
-                  obscureText: isPasswordHidden,
-                  decoration: InputDecoration(
-                    labelText: "Password",
-                    hintText: "Enter your password",
-                    prefixIcon: const Icon(Icons.lock),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        isPasswordHidden
-                            ? Icons.visibility
-                            : Icons.visibility_off,
+                Consumer<AuthProvider>(
+                  builder: (context, authProvider, child) {
+                    return TextFormField(
+                      controller: passwordController,
+                      obscureText: !authProvider.passwordObsecure,
+                      decoration: InputDecoration(
+                        labelText: "Password",
+                        hintText: "Enter your password",
+                        prefixIcon: const Icon(Icons.lock),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            authProvider.passwordObsecure
+                                ? Icons.visibility_outlined
+                                : Icons.visibility_off_outlined,
+                          ),
+                          onPressed: () {
+                            authProvider.togglePasswordObsecure();
+                          },
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
-                      onPressed: () {
-                        setState(() {
-                          isPasswordHidden = !isPasswordHidden;
-                        });
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return "Please enter your password";
+                        }
+
+                        if (value.length < 6) {
+                          return "Password must be at least 6 characters";
+                        }
+
+                        return null;
                       },
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return "Please enter your password";
-                    }
-
-                    if (value.length < 6) {
-                      return "Password must be at least 6 characters";
-                    }
-
-                    return null;
+                    );
                   },
                 ),
 
                 const SizedBox(height: 30),
 
-                ButtonWidget(
-                  text: 'Login',
-                  onPressed: () async {
-                    try {
-                      Services services = Services();
+                Consumer<AuthProvider>(
+                  builder: (context, authProvider, child) {
+                    return ButtonWidget(
+                      text: 'Login',
+                      onPressed: () async {
+                        if (!_formKey.currentState!.validate()) {
+                          return;
+                        }
+                        try {
+                          await authProvider.logIn(
+                            email: emailController.text,
+                            password: passwordController.text,
+                          );
 
-                      await services.logIn(
-                        email: emailController.text,
-                        password: passwordController.text,
-                      );
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Login Successfully')),
+                          );
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Login Successfully')),
-                      );
-
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (_) => HomeScreen()),
-                      );
-                    } catch (e) {
-                      ScaffoldMessenger.of(
-                        context,
-                      ).showSnackBar(SnackBar(content: Text(e.toString())));
-                    }
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (_) => HomeScreen()),
+                          );
+                        } catch (e) {
+                          ScaffoldMessenger.of(
+                            context,
+                          ).showSnackBar(SnackBar(content: Text(e.toString())));
+                        }
+                      },
+                      width: double.infinity,
+                      height: 70,
+                      backgroundColor: Colors.blueAccent,
+                      textColor: Colors.white,
+                      borderRadius: 15,
+                    );
                   },
-                  width: double.infinity,
-                  height: 70,
-                  backgroundColor: Colors.blueAccent,
-                  textColor: Colors.white,
-                  borderRadius: 15,
                 ),
 
                 const SizedBox(height: 20),
